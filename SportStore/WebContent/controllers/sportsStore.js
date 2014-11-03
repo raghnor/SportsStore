@@ -1,8 +1,9 @@
 angular.module('sportsStore')
-.constant('dataUrl','http://127.0.0.1:9999/')
-.constant('orderUrl', 'http://127.0.0.1:9999/orders')
-.constant('localData',true)
-.controller('sportsStoreCtrl', function($scope, $http, dataUrl, orderUrl, localData){
+.constant('dataUrl','http://localhost:9999/products')
+.constant('orderUrl', 'http://localhost:9999/orders')
+.constant('localData',false)
+.controller('sportsStoreCtrl', function($scope, $http, $location,
+		dataUrl, cart, orderUrl, localData){
 	
 	var localDataArray =
 		[{ id:1, name: 'Product #1', description: 'A product', category: 'Category #1', price: 100 },
@@ -39,7 +40,8 @@ angular.module('sportsStore')
 			$scope.data.orders.push(order);
 		else
 		{	
-		$http.post(orderUrl, order)
+			var jsonOrderData = JSON.stringify(order);
+			$http.post(orderUrl, jsonOrderData)
 			.success(function (data) {
 				$scope.data.orderId = data.id;
 				cart.getProducts().length = 0;
