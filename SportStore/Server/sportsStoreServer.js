@@ -20,32 +20,72 @@ var orders = [];
 // Main CreateServer function
 
 http.createServer(function (req, res) {
-    if(req.method == "GET")
-    {  
-        if(url.parse(req.url).pathname == '/products')
-            getProducts(req, res);
-        else if(url.parse(req.url).pathname == '/orders')
-            getOrders(req, res);
-        else
-            getHelpPage(req,res);
-    }
-    else if( req.method == "POST")
-    {
-        if(url.parse(req.url).pathname == '/products')
-            postProduct(req, res);
-        else if(url.parse(req.url).pathname == '/orders')
-            postOrder(req, res);
-        else
-            getHelpPage(req,res);
-    }
-	else if (req.method === 'OPTIONS') 
-		optionRequest(req, res);
+	switch(req.method)
+	{
+		case "GET":
+			manageGetCalls(req, res);
+			break;
+		
+		case "POST":
+			managePostCalls(req, res);
+			break;
+			
+		case "OPTION":
+			optionRequest(req, res);
+			break;
+			
+		case "DELETE":
+			manageDelCalls(req, res);
+			break;
+			
+		case "PUT":
+			managePutCalls(req, res);
+			break;
+			
+		default:
+			getHelpPage(req,res);
+			break;
+	}
 }).listen(9999);    //, '127.0.0.1');
 
 console.log('--- SportsStore Web Service ---');
 console.log('Server running at http://127.0.0.1:9999/');
 
-// OPTIONS Request Handler
+// HTTP Methods mgmnt handler
+
+function manageGetCalls(req, res) {
+	if(url.parse(req.url).pathname == '/products')
+		getProducts(req, res);
+	else if(url.parse(req.url).pathname == '/orders')
+		getOrders(req, res);
+	else
+		getHelpPage(req,res);
+}
+
+function managePostCalls(req, res) {
+	if(url.parse(req.url).pathname == '/products')
+		postProduct(req, res);
+	else if(url.parse(req.url).pathname == '/orders')
+		postOrder(req, res);
+	else if(url.parse(req.url).pathname == '/login')
+		login(req, res);
+	else
+		getHelpPage(req,res);
+}
+
+function managePutCalls(req, res) {
+	res.writeHead(200, {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE', 'Access-Control-Allow-Headers': 'Content-Type'});
+	res.end('{ "result": "OK", "message":"PUT messages are not processed at this time." }');
+	
+	console.log('[PUT] Request : OK');
+}
+
+function manageDelCalls(req, res) {
+	res.writeHead(200, {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE', 'Access-Control-Allow-Headers': 'Content-Type'});
+	res.end('{ "result": "OK", "message":"DELETE messages are not processed at this time." }');
+	
+	console.log('[DELETE] Request : OK');
+}
 
 function optionRequest(req, res) {
 	var headers = {};
@@ -131,6 +171,36 @@ function postProduct(req, res) {
     });
 }
 
+function login(req, res) {
+	// the body of the POST is JSON payload.
+    var data = '';
+    req.addListener('data', function(chunk) { data += chunk; console.log("[POST] Login Data on going: " + data); });
+    req.addListener('end', function() {
+        try {
+			console.log("[POST] Login Data received: " + data);
+            var readData = JSON.parse(data);
+            if(readData != null)
+			{
+				if(readData.username == 'admin' && readData.password == 'admin') {
+					res.writeHead(200, {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE', 'Access-Control-Allow-Headers': 'Content-Type'});
+					res.end('{ "result": "OK" }');
+					console.log('[POST] Login Request : OK (Successful)');
+				} else {
+					res.writeHead(200, {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE', 'Access-Control-Allow-Headers': 'Content-Type'});
+					res.end('{ "result": "KO" }');
+					console.log('[POST] Login Request : OK (Failed)');
+				}
+			}
+        } catch ( e ) {
+            res.writeHead(500, {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE', 'Access-Control-Allow-Headers': 'Content-Type'});
+            res.write('{ "error":"' + e + '" }');
+            res.end('\n');
+            
+            console.log('[POST] Login Request : KO');
+        }
+    });
+}
+
 // Help page Handler
 
 function getHelpPage(req,res) {
@@ -144,4 +214,4 @@ function getHelpPage(req,res) {
     res.write('/orders [GET] : returns the list of the current orders\n<br/>');
     res.write('/orders [POST] : save a new order in the list of the current orders\n<br/>');
     res.end('\n');
-}}
+}

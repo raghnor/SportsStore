@@ -1,5 +1,6 @@
 angular.module('sportsStoreAdmin')
 	.constant('authUrl','http://localhost:9999/login')
+	.constant('ordersUrl','http://localhost:9999/orders')
 	.controller('authCtrl', function($scope, $http, $location, authUrl) {
 		
 		$scope.authenticate = function(user, pass) {
@@ -16,7 +17,7 @@ angular.module('sportsStoreAdmin')
 		}
 		
 	})
-	.controller('mainCtrl',function($scope) {
+	.controller('mainCtrl', function($scope) {
 		
 		$scope.screens = ['Products', 'Orders'];
 		$scope.current = $scope.screens[0];
@@ -30,5 +31,32 @@ angular.module('sportsStoreAdmin')
 				? 'views/adminProducts.html'
 						: 'views/adminOrders.html';
 		}
+		
+	})
+	.controller('ordersCtrl', function($scope, $http, ordersUrl){
+		
+		$http.get(ordersUrl)
+		.success(function(data) {
+			$scope.orders = data;
+		})
+		.error(function(error) {
+			$scope.error = error;
+		});
+		
+		$scope.selectedOrder;
+		
+		$scope.selectOrder = function(order) {
+			$scope.selectedOrder = order;
+		};
+		
+		$scope.calcTotal = function(order) {
+			var total = 0;
+			
+			for(var i = 0; i < order.products.length; i++){
+				total += order.products[i].count * order.products[i].price;
+			}
+			
+			return total;
+		};
 		
 	});
