@@ -1,6 +1,7 @@
 // Includes
 var http = require('http');
 var url = require('url');
+var shortId = require('shortid');
 
 // Starting Data
 var products = [
@@ -81,10 +82,12 @@ function managePutCalls(req, res) {
 }
 
 function manageDelCalls(req, res) {
-	res.writeHead(200, {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE', 'Access-Control-Allow-Headers': 'Content-Type'});
-	res.end('{ "result": "OK", "message":"DELETE messages are not processed at this time." }');
-	
-	console.log('[DELETE] Request : OK');
+	if(url.parse(req.url).pathname == '/products')
+		deleteProduct(req, res);
+	else if(url.parse(req.url).pathname == '/orders')
+		deleteOrder(req, res);
+	else
+		getHelpPage(req,res);
 }
 
 function optionRequest(req, res) {
@@ -130,8 +133,10 @@ function postOrder(req, res) {
         try {
 			console.log("[POST] Order Data received: " + data);
             var readData = JSON.parse(data);
-            if(readData != null)
-                   orders.push(readData);
+            if(readData != null) {
+            	readData.id = shortId.generate();
+            	orders.push(readData);
+            }    
         } catch ( e ) {
             res.writeHead(500, {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE', 'Access-Control-Allow-Headers': 'Content-Type'});
             res.write('{ "error":"' + e + '" }');
@@ -154,8 +159,10 @@ function postProduct(req, res) {
         try {
 			console.log("[POST] Product Data received: " + data);
             var readData = JSON.parse(data);
-            if(readData != null)
-                   products.push(readData);
+            if(readData != null){
+            	readData.id = shortId.generate();
+            	products.push(readData);
+            }    
         } catch ( e ) {
             res.writeHead(500, {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE', 'Access-Control-Allow-Headers': 'Content-Type'});
             res.write('{ "error":"' + e + '" }');
@@ -198,6 +205,60 @@ function login(req, res) {
             
             console.log('[POST] Login Request : KO');
         }
+    });
+}
+
+// Delete Requests Handler
+
+function deleteOrder(req, res) {
+	// the body of the POST is JSON payload.
+    var data = '';
+    req.addListener('data', function(chunk) { data += chunk; console.log("[DELETE] Order Data on going: " + data); });
+    req.addListener('end', function() {
+        try {
+			console.log("[DELETE] Order Data received: " + data);
+            var readData = JSON.parse(data);
+            if(readData != null){
+            	// ???
+            }    
+        } catch ( e ) {
+            res.writeHead(500, {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE', 'Access-Control-Allow-Headers': 'Content-Type'});
+            res.write('{ "error":"' + e + '" }');
+            res.end('\n');
+            
+            console.log('[DELETE] Order Request : KO');
+        }
+
+        res.writeHead(200, {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE', 'Access-Control-Allow-Headers': 'Content-Type'});
+        res.end('{ "result": "OK", "id": "' + readData + '", "productcount":"' + products.length + '" }');
+        
+        console.log('[DELETE] Order Request : OK');
+    });
+}
+
+function deleteProduct(req, res) {
+	// the body of the POST is JSON payload.
+    var data = '';
+    req.addListener('data', function(chunk) { data += chunk; console.log("[DELETE] Product Data on going: " + data); });
+    req.addListener('end', function() {
+        try {
+			console.log("[DELETE] Product Data received: " + data);
+            var readData = JSON.parse(data);
+            if(readData != null){
+            	// ???
+            }    
+        } catch ( e ) {
+            res.writeHead(500, {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE', 'Access-Control-Allow-Headers': 'Content-Type'});
+            res.write('{ "error":"' + e + '" }');
+            res.end('\n');
+            
+            console.log('[DELETE] Product Request : KO');
+        }
+
+        res.writeHead(200, {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE', 'Access-Control-Allow-Headers': 'Content-Type'});
+        res.end('{ "result": "OK", "id": "' + readData + '", "productcount":"' + products.length + '" }');
+        
+        console.log('[DELETE] Product Request : OK');
     });
 }
 
