@@ -66,6 +66,15 @@ var App;
             return TestCtrl;
         })();
         Controllers.TestCtrl = TestCtrl;
+        ExampleController.$inject = ['$scope'];
+        function ExampleController($scope) {
+            var vm = this;
+            vm.min = 3;
+            vm.max = $scope.max;
+            console.log('CTRL: $scope.max = %i', $scope.max);
+            console.log('CTRL: vm.min = %i', vm.min);
+            console.log('CTRL: vm.max = %i', vm.max);
+        }
     })(Controllers = App.Controllers || (App.Controllers = {}));
 })(App || (App = {}));
 var App;
@@ -94,9 +103,27 @@ var App;
             };
         }
         Directives.PrintTestName = PrintTestName;
+        function myExample() {
+            var directive = {
+                restrict: 'EA',
+                templateUrl: 'example.directive.html',
+                scope: {
+                    max: '='
+                },
+                link: linkFunc,
+                controller: App.Controllers.ExampleController,
+                controllerAs: 'vm'
+            };
+            return directive;
+            function linkFunc(scope, el, attr, ctrl) {
+                console.log('LINK: scope.max = %i', scope.max);
+                console.log('LINK: scope.vm.min = %i', scope.vm.min);
+                console.log('LINK: scope.vm.max = %i', scope.vm.max);
+            }
+        }
     })(Directives = App.Directives || (App.Directives = {}));
 })(App || (App = {}));
 var App;
 (function (App) {
-    angular.module("angularTest", []).service("appStorage", App.Services.AppStorage).filter("ucase", App.Filters.UCase).factory("appStorageFactory", App.Factories.AppStorageFactory).directive("printTestName", App.Directives.PrintTestName).controller("testCtrl", App.Controllers.TestCtrl);
+    angular.module("angularTest", []).service("appStorage", App.Services.AppStorage).filter("ucase", App.Filters.UCase).factory("appStorageFactory", App.Factories.AppStorageFactory).directive("printTestName", App.Directives.PrintTestName).directive('myExample', App.Directives.myExample).controller("testCtrl", App.Controllers.TestCtrl);
 })(App || (App = {}));
